@@ -1,5 +1,6 @@
 bin/
 build/
+.vscode/settings.json
 
 # Prerequisites
 *.d
