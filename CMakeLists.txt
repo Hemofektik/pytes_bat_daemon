@@ -10,4 +10,7 @@ find_package(cpprestsdk REQUIRED)
 find_package(CppLinuxSerial REQUIRED)
 
 add_subdirectory(src)
-#add_subdirectory(test)
+
+if(CMAKE_TESTING_ENABLED)
+    add_subdirectory(test)
+endif()
