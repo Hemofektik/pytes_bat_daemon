@@ -7,6 +7,14 @@
 namespace pytes::bms
 {
 
+enum class BatteryState
+{
+    Unknown,
+    Absent,
+    Charging,
+    Discharging,
+};
+
 struct BatteryUnitTelemetry {
     int32_t id;
     std::optional<int32_t> volt_mV;
@@ -16,7 +24,7 @@ struct BatteryUnitTelemetry {
     std::optional<int32_t> thigh_mC;
     std::optional<int32_t> vlow_mV;
     std::optional<int32_t> vhigh_mV;
-    std::string base_st;
+    BatteryState base_state;
     std::string volt_st;
     std::string curr_st;
     std::string temp_st;

@@ -1,10 +1,12 @@
 #pragma once
 
 #include <optional>
-#include <ranges>
 #include <iostream>
 #include <charconv>
 #include <string_view>
+
+namespace pytes::bms
+{
 
 std::optional<int32_t> to_int(std::string_view sv)
 {
@@ -25,4 +27,7 @@ std::istream& operator>> (std::istream& is, std::optional<int32_t>& optInt)
     is >> str; 
     optInt = to_int(str);
     return is;
+}
+
+
 }
