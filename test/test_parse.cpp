@@ -1,8 +1,10 @@
 
 #include <string_view>
+#include <catch2/catch_test_macros.hpp>
 
+#include <bms/Telemetry.h>
 
-std::string_view bmsOutput = R"(
+const std::string_view bmsOutput = R"(@
 Power Volt   Curr   Tempr  Tlow   Thigh  Vlow   Vhigh  Base.St  Volt.St  Curr.St  Temp.St  Coulomb  Time                 B.V.St   B.T.St   Barcode              DevType             
 1     52557  -2698  31000  29000  30000  3283   3287   Dischg   Normal   Normal   Normal   57%      2024-09-06 09:42:07  Normal   Normal   ES1000899P021133     E-BOX-48100R-C     
 2     52568  -2767  31000  29000  30000  3281   3288   Dischg   Normal   Normal   Normal   57%      2024-09-06 09:42:05  Normal   Normal   ES1000899P021107     E-BOX-48100R-C      
@@ -21,3 +23,24 @@ Power Volt   Curr   Tempr  Tlow   Thigh  Vlow   Vhigh  Base.St  Volt.St  Curr.St
 15    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -        -                    -                   
 16    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -        -                    -                   
 )";
+
+
+using namespace pytes;
+
+
+SCENARIO( "Raw BMS Telemetry can be parsed", "[bms::telemetry]" ) {
+
+    GIVEN( "raw telemetry from pytes BMS serial console" ) {
+
+        const std::string telemetry{bmsOutput};
+  
+        WHEN( "parsing the telemetry" ) {
+            
+            auto const parsedPytesOutput{bms::parseRawTelemetry(telemetry)};
+
+            THEN( "The number of parsed entries is as expected" ) {
+                REQUIRE( parsedPytesOutput.size() == 16 );
+            }
+        }
+    }
+}

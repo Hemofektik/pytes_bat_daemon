@@ -14,12 +14,23 @@ foreach(f ${SOURCES})
     source_group("${SRCGR}" FILES ${f})
 endforeach()
 
+string(REPLACE pytes.cpp "" SOURCESwithoutMain "${SOURCES}")
+
+add_library(pytes 
+   ${SOURCESwithoutMain}
+)
+
 add_executable (
-   pytes
-   ${SOURCES}
+   pytes_daemon
+   pytes.cpp
 )
 
 target_link_libraries(pytes PRIVATE 
    cpprestsdk::cpprest
    CppLinuxSerial::CppLinuxSerial
+)
+
+
+target_link_libraries(pytes_daemon PRIVATE 
+   pytes
 )
