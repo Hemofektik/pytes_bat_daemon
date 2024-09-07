@@ -29,7 +29,6 @@ struct BatteryUnitTelemetry {
     std::string devtype;
 };
 
-std::string readRawTelemetry();
-std::vector<BatteryUnitTelemetry> parseRawTelemetry(const std::string& rawTelemetry);
+std::vector<BatteryUnitTelemetry> parseRawPowerTelemetry(const std::string& rawTelemetry);
 
 }

@@ -36,10 +36,10 @@ SCENARIO( "Raw BMS Telemetry can be parsed", "[bms::telemetry]" ) {
   
         WHEN( "parsing the telemetry" ) {
             
-            auto const parsedPytesOutput{bms::parseRawTelemetry(telemetry)};
+            auto const parsedPowerTelemetry{bms::parseRawPowerTelemetry(telemetry)};
 
             THEN( "The number of parsed entries is as expected" ) {
-                REQUIRE( parsedPytesOutput.size() == 16 );
+                REQUIRE( parsedPowerTelemetry.size() == 16 );
             }
         }
     }
