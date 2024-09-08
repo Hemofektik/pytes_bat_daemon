@@ -1,0 +1,14 @@
+[Unit]
+Description=PYTES BMS REST Service
+After=network.target
+
+[Service]
+ExecStart=/opt/pytes_daemon/pytes_daemon
+WorkingDirectory=/opt/pytes_daemon
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=rsc
+
+[Install]
+WantedBy=multi-user.target

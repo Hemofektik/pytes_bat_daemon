@@ -50,7 +50,10 @@ std::ostream& operator<<(std::ostream& os, const bms::BatteryState& batState)
 
 int main()
 {
-    auto bmsAdapter{bms::SerialAdapter()};
+    std::optional<bms::SerialAdapter> bmsAdapter{};
+    bmsAdapter.emplace();
+
+    bool const debugLogEnabled{true};
 
     while(true)
     {
@@ -58,27 +61,38 @@ int main()
 
         try
         {
-            auto const rawPowerTelemetry{bmsAdapter.readRawPowerTelemetry()};
+            auto const rawPowerTelemetry{bmsAdapter->readRawPowerTelemetry()};
             auto const parsedPowerTelemetry{bms::parseRawPowerTelemetry(rawPowerTelemetry)};
 
             // Print parsed data for verification
-            for (const auto& row : parsedPowerTelemetry) {
-                
+            for (const auto& row : parsedPowerTelemetry) 
+            {    
                 if(row.base_state == bms::BatteryState::Absent)
                 {
                     continue;
                 }
 
-                std::cout << row.id << " " << row.volt_mV << " " << row.curr_mA << " "
-                        << row.tempr_mC << " " << row.tlow_mC << " " << row.thigh_mC << " " << row.vlow_mV << " "
-                        << row.vhigh_mV << " " << row.base_state << " " << row.volt_st << " " << row.curr_st << " "
-                        << row.temp_st << " " << row.coulomb_percent << " " << row.date << "T" << row.time << " " << row.b_v_st << " "
-                        << row.b_t_st << " " << row.barcode << " " << row.devtype << std::endl;
+                if(row.base_state == bms::BatteryState::Unknown)
+                {
+                    std::cerr << "Encountered unexpected battery telemetry:" << std::endl << rawPowerTelemetry << std::endl;
+                }
+
+                if(debugLogEnabled)
+                {
+                    std::cout << row.id << " " << row.volt_mV << " " << row.curr_mA << " "
+                            << row.tempr_mC << " " << row.tlow_mC << " " << row.thigh_mC << " " 
+                            << row.vlow_mV << " " << row.vhigh_mV << " " << row.base_state << " " 
+                            << row.volt_st << " " << row.curr_st << " " << row.temp_st << " " 
+                            << row.coulomb_percent << " " << row.date << "T" << row.time << " " 
+                            << row.b_v_st << " " << row.b_t_st << " " 
+                            << row.barcode << " " << row.devtype << std::endl;
+                }
             }
         }
         catch(const std::exception& e)
         {
-            std::cerr << e.what() << '\n';
+            std::cerr << e.what() << std::endl << "Reconnecting to BMS adapter" << std::endl;
+            bmsAdapter.emplace();
         }
     }
 }
