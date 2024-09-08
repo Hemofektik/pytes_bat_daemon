@@ -56,8 +56,11 @@ std::string SerialAdapter::readRawPowerTelemetry()
         while(serialPort.Available() || waitedFor < timeout)
         {
             std::string readData;
-            serialPort.Read(readData);
-            totalReadData.append(readData);
+            if(serialPort.Available())
+            {
+                serialPort.Read(readData);
+                totalReadData.append(readData);
+            }
 
             if(readData.rfind(sentinel) == std::string::npos)
             {

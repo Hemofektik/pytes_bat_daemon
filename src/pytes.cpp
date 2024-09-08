@@ -21,9 +21,30 @@ std::ostream& operator<<(std::ostream& os, const std::optional<int32_t>& opt)
 }
 
 
+std::ostream& operator<<(std::ostream& os, const std::optional<std::string>& opt)
+{
+    os << opt.value_or("-");
+    return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const bms::BatteryState& batState)
 {
-    os << "Unknown";
+    switch (batState)
+    {
+    case bms::BatteryState::Unknown:
+        os << "Unknown";
+        break;
+    case bms::BatteryState::Absent:
+        os << "Absent";
+        break;
+    case bms::BatteryState::Charging:
+        os << "Charge";
+        break;
+    case bms::BatteryState::Discharging:
+        os << "Dischg";
+        break;
+    }
+
     return os;
 }
 
@@ -40,11 +61,14 @@ int main()
             auto const rawPowerTelemetry{bmsAdapter.readRawPowerTelemetry()};
             auto const parsedPowerTelemetry{bms::parseRawPowerTelemetry(rawPowerTelemetry)};
 
-            
-            std::cout << rawPowerTelemetry << std::endl;
-
             // Print parsed data for verification
             for (const auto& row : parsedPowerTelemetry) {
+                
+                if(row.base_state == bms::BatteryState::Absent)
+                {
+                    continue;
+                }
+
                 std::cout << row.id << " " << row.volt_mV << " " << row.curr_mA << " "
                         << row.tempr_mC << " " << row.tlow_mC << " " << row.thigh_mC << " " << row.vlow_mV << " "
                         << row.vhigh_mV << " " << row.base_state << " " << row.volt_st << " " << row.curr_st << " "

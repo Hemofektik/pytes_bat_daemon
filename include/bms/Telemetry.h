@@ -25,16 +25,16 @@ struct BatteryUnitTelemetry {
     std::optional<int32_t> vlow_mV;
     std::optional<int32_t> vhigh_mV;
     BatteryState base_state;
-    std::string volt_st;
-    std::string curr_st;
-    std::string temp_st;
+    std::optional<std::string> volt_st;
+    std::optional<std::string> curr_st;
+    std::optional<std::string> temp_st;
     std::optional<int32_t> coulomb_percent;
-    std::string date;
-    std::string time;
-    std::string b_v_st;
-    std::string b_t_st;
-    std::string barcode;
-    std::string devtype;
+    std::optional<std::string> date;
+    std::optional<std::string> time;
+    std::optional<std::string> b_v_st;
+    std::optional<std::string> b_t_st;
+    std::optional<std::string> barcode;
+    std::optional<std::string> devtype;
 };
 
 std::vector<BatteryUnitTelemetry> parseRawPowerTelemetry(const std::string& rawTelemetry);

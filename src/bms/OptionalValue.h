@@ -29,5 +29,20 @@ std::istream& operator>> (std::istream& is, std::optional<int32_t>& optInt)
     return is;
 }
 
+std::istream& operator>> (std::istream& is, std::optional<std::string>& optStr)
+{
+    std::string str;
+    is >> str; 
+    if(str == "-")
+    {
+        optStr.reset();
+    }
+    else
+    {
+        optStr.emplace(str);
+    }
+    return is;
+}
+
 
 }
