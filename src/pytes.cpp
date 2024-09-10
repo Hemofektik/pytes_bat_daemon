@@ -50,6 +50,7 @@ std::ostream& operator<<(std::ostream& os, const bms::BatteryState& batState)
 
 int main()
 {
+    std::vector<bms::BatteryUnitTelemetry> mostRecentBatteryTelemetry;
     std::optional<bms::SerialAdapter> bmsAdapter{};
     bmsAdapter.emplace();
 
@@ -64,8 +65,8 @@ int main()
             auto const rawPowerTelemetry{bmsAdapter->readRawPowerTelemetry()};
             auto const parsedPowerTelemetry{bms::parseRawPowerTelemetry(rawPowerTelemetry)};
 
-            // Print parsed data for verification
-            for (const auto& row : parsedPowerTelemetry) 
+            std::vector<bms::BatteryUnitTelemetry> newBatteryTelemetry;
+            for (const auto& row : parsedPowerTelemetry)
             {    
                 if(row.base_state == bms::BatteryState::Absent)
                 {
@@ -75,7 +76,10 @@ int main()
                 if(row.base_state == bms::BatteryState::Unknown)
                 {
                     std::cerr << "Encountered unexpected battery telemetry:" << std::endl << rawPowerTelemetry << std::endl;
+                    continue;
                 }
+
+                newBatteryTelemetry.push_back(row);
 
                 if(debugLogEnabled)
                 {
@@ -88,6 +92,8 @@ int main()
                             << row.barcode << " " << row.devtype << std::endl;
                 }
             }
+            
+            std::swap(mostRecentBatteryTelemetry, newBatteryTelemetry);
         }
         catch(const std::exception& e)
         {

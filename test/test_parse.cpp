@@ -45,9 +45,11 @@ SCENARIO( "Raw BMS Telemetry can be parsed", "[bms::telemetry]" )
                 REQUIRE( parsedPowerTelemetry[0].curr_mA == -2698 );
                 REQUIRE( parsedPowerTelemetry[0].base_state == bms::BatteryState::Discharging );
                 REQUIRE( parsedPowerTelemetry[0].coulomb_percent == 57 );
+
                 REQUIRE( parsedPowerTelemetry[1].curr_mA == 2767 );
                 REQUIRE( parsedPowerTelemetry[1].base_state == bms::BatteryState::Charging );
                 REQUIRE( parsedPowerTelemetry[1].coulomb_percent == 99 );
+
                 REQUIRE( not parsedPowerTelemetry[4].curr_mA.has_value() );
                 REQUIRE( parsedPowerTelemetry[4].base_state == bms::BatteryState::Absent );
                 REQUIRE( not parsedPowerTelemetry[4].coulomb_percent.has_value() );
