@@ -33,4 +33,11 @@ RestService::~RestService()
     service->close().wait();
 }
 
+void RestService::updateBatteryTelemetry(const std::vector<bms::BatteryUnitTelemetry>& newBatteryTelemetry)
+{
+    const int newLatestBatteryTelemetryIndex{(latestBatteryTelemetryIndex + 1) & 1};
+    latestBatteryTelemetry[newLatestBatteryTelemetryIndex] = newBatteryTelemetry;
+    latestBatteryTelemetryIndex = newLatestBatteryTelemetryIndex;
+}
+
 }

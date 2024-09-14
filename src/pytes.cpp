@@ -54,13 +54,13 @@ std::ostream& operator<<(std::ostream& os, const bms::BatteryState& batState)
 
 int main()
 {
-    std::vector<bms::BatteryUnitTelemetry> mostRecentBatteryTelemetry;
     std::optional<bms::SerialAdapter> bmsAdapter{};
+    std::optional<RestService> restService;
     bmsAdapter.emplace();
 
     try
     {
-        RestService restService{};
+        restService.emplace();
     }
     catch(const std::exception& e)
     {
@@ -106,8 +106,8 @@ int main()
                             << row.barcode << " " << row.devtype << std::endl;
                 }
             }
-            
-            std::swap(mostRecentBatteryTelemetry, newBatteryTelemetry);
+
+            restService->updateBatteryTelemetry(newBatteryTelemetry);
         }
         catch(const std::exception& e)
         {
