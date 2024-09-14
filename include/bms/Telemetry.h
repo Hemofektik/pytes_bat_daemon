@@ -13,6 +13,7 @@ enum class BatteryState
     Absent,
     Charging,
     Discharging,
+    Idle
 };
 
 struct BatteryUnitTelemetry {

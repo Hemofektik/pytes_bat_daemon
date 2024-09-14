@@ -8,6 +8,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23 -Wconversion -Wall -Wextra -W
 
 find_package(cpprestsdk REQUIRED)
 find_package(CppLinuxSerial REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 include_directories("include")
 

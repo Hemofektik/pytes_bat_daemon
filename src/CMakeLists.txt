@@ -28,6 +28,7 @@ add_executable (
 target_link_libraries(pytes PRIVATE 
    cpprestsdk::cpprest
    CppLinuxSerial::CppLinuxSerial
+   OpenSSL::SSL
 )
 
 

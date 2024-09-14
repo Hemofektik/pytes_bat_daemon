@@ -8,6 +8,7 @@
 
 #include <bms/SerialAdapter.h>
 #include <bms/Telemetry.h>
+#include "RestService.h"
 
 using namespace std::chrono_literals;
 using namespace pytes;
@@ -43,6 +44,9 @@ std::ostream& operator<<(std::ostream& os, const bms::BatteryState& batState)
     case bms::BatteryState::Discharging:
         os << "Dischg";
         break;
+    case bms::BatteryState::Idle:
+        os << "Idle";
+        break;
     }
 
     return os;
@@ -53,6 +57,8 @@ int main()
     std::vector<bms::BatteryUnitTelemetry> mostRecentBatteryTelemetry;
     std::optional<bms::SerialAdapter> bmsAdapter{};
     bmsAdapter.emplace();
+
+    RestService restService{};
 
     bool const debugLogEnabled{true};
 

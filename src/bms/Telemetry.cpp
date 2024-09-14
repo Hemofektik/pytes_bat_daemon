@@ -28,6 +28,10 @@ std::istream& operator>> (std::istream& is, BatteryState& batState)
     {
         batState = BatteryState::Discharging;
     }
+    else if(str == "Idle")
+    {
+        batState = BatteryState::Idle;
+    }
     else
     {
         batState = BatteryState::Unknown;

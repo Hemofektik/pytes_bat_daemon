@@ -87,4 +87,5 @@ std::string SerialAdapter::readRawPowerTelemetry()
 
     throw std::runtime_error("Timeout occured! Did not read receive data from the serial device.");
 }
+
 }
