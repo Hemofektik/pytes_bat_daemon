@@ -9,6 +9,7 @@ class RestService
 
 public:
     RestService();
+    ~RestService();
 
 private:
     std::unique_ptr<rest::Service> service;

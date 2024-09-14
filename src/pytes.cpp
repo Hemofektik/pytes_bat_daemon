@@ -58,7 +58,15 @@ int main()
     std::optional<bms::SerialAdapter> bmsAdapter{};
     bmsAdapter.emplace();
 
-    RestService restService{};
+    try
+    {
+        RestService restService{};
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << "Unable to create REST service: "  << e.what() << std::endl;
+        return 1;
+    }
 
     bool const debugLogEnabled{true};
 
