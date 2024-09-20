@@ -17,7 +17,7 @@ enum class BatteryState
 };
 
 struct BatteryUnitTelemetry {
-    int32_t id;
+    int32_t id{0};
     std::optional<int32_t> volt_mV;
     std::optional<int32_t> curr_mA;
     std::optional<int32_t> tempr_mC;
@@ -25,7 +25,7 @@ struct BatteryUnitTelemetry {
     std::optional<int32_t> thigh_mC;
     std::optional<int32_t> vlow_mV;
     std::optional<int32_t> vhigh_mV;
-    BatteryState base_state;
+    BatteryState base_state{BatteryState::Unknown};
     std::optional<std::string> volt_st;
     std::optional<std::string> curr_st;
     std::optional<std::string> temp_st;
@@ -38,6 +38,21 @@ struct BatteryUnitTelemetry {
     std::optional<std::string> devtype;
 };
 
+struct AggregatedBatteryTelemetry {
+    std::optional<int32_t> avgVolt_mV;
+    std::optional<int32_t> avgCurr_mA;
+    std::optional<int32_t> avgTempr_mC;
+    std::optional<int32_t> minVoltLow_mV;
+    std::optional<int32_t> maxVoltHigh_mV;
+    BatteryState baseState{BatteryState::Unknown};
+    std::optional<int32_t> avgCoulomb_percent;
+    std::optional<std::string> date;
+    std::optional<std::string> time;
+    std::optional<std::string> devtype;
+};
+
 std::vector<BatteryUnitTelemetry> parseRawPowerTelemetry(const std::string& rawTelemetry);
+
+AggregatedBatteryTelemetry aggregateBatteryTelemetry(const  std::vector<BatteryUnitTelemetry>& batteryTelemetry);
 
 }

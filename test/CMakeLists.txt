@@ -12,5 +12,9 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(test_parse test_parse.cpp)
 target_link_libraries(test_parse PRIVATE Catch2::Catch2WithMain pytes)
 
+add_executable(test_aggregate test_aggregate.cpp)
+target_link_libraries(test_aggregate PRIVATE Catch2::Catch2WithMain pytes)
+
 include(Catch)
 catch_discover_tests(test_parse)
+catch_discover_tests(test_aggregate)
