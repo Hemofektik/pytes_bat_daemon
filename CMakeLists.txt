@@ -10,6 +10,15 @@ find_package(cpprestsdk REQUIRED)
 find_package(CppLinuxSerial REQUIRED)
 find_package(OpenSSL REQUIRED)
 
+include(FetchContent)
+
+FetchContent_Declare(
+    Backward
+    GIT_REPOSITORY https://github.com/bombela/backward-cpp
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(Backward)
+
 include_directories("include")
 
 add_subdirectory(src)

@@ -77,7 +77,7 @@ std::vector<BatteryUnitTelemetry> parseRawPowerTelemetry(const std::string& rawT
     return data;
 }
 
-AggregatedBatteryTelemetry aggregateBatteryTelemetry(const  std::vector<BatteryUnitTelemetry>& batteryTelemetry)
+AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUnitTelemetry>& batteryTelemetry)
 {
     int32_t avgVolt_mV{0};
     int32_t avgCurr_mA{0};
@@ -95,9 +95,9 @@ AggregatedBatteryTelemetry aggregateBatteryTelemetry(const  std::vector<BatteryU
     auto present{[](const auto& row){ return row.base_state != BatteryState::Absent; }};
     auto presentBatteryTelemetry{batteryTelemetry | std::views::filter(present) | std::views::common};
 
-    std::map<BatteryState, int> stateCount = std::accumulate(std::next(presentBatteryTelemetry.begin()), presentBatteryTelemetry.end(),
+    std::map<BatteryState, int> stateCount{std::accumulate(presentBatteryTelemetry.begin(), presentBatteryTelemetry.end(),
                                     std::map<BatteryState, int>{},
-                                    countState);
+                                    countState)};
 
     std::vector<std::pair<BatteryState, int>> stateCountVec;
     std::copy(stateCount.begin(), stateCount.end(), std::back_inserter(stateCountVec));

@@ -5,6 +5,7 @@
 #include <optional>
 #include <chrono>
 #include <thread>
+#include "backward.hpp"
 
 #include <bms/SerialAdapter.h>
 #include <bms/Telemetry.h>
@@ -54,6 +55,8 @@ std::ostream& operator<<(std::ostream& os, const bms::BatteryState& batState)
 
 int main()
 {
+    backward::SignalHandling sh;
+
     std::optional<bms::SerialAdapter> bmsAdapter{};
     std::optional<RestService> restService;
     bmsAdapter.emplace();

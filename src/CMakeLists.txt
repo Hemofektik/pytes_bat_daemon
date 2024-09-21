@@ -29,6 +29,7 @@ target_link_libraries(pytes PRIVATE
    cpprestsdk::cpprest
    CppLinuxSerial::CppLinuxSerial
    OpenSSL::SSL
+   PUBLIC Backward::Interface
 )
 
 

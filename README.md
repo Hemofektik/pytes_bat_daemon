@@ -17,7 +17,7 @@ This is an example setup that this program has been developed for.
 Run the following commands to install the dependencies.
 
 ```
-sudo apt install libcpprest-dev
+sudo apt install libcpprest-dev binutils-dev
 
 cd /tmp
 git clone https://github.com/gbmhunter/CppLinuxSerial.git
