@@ -15,7 +15,6 @@ using namespace mn::CppLinuxSerial;
 namespace pytes::bms
 {
 
-
 std::istream& operator>> (std::istream& is, BatteryState& batState)
 {
     std::string str;
@@ -79,21 +78,26 @@ std::vector<BatteryUnitTelemetry> parseRawPowerTelemetry(const std::string& rawT
 
 AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUnitTelemetry>& batteryTelemetry)
 {
-    int32_t avgVolt_mV{0};
-    int32_t avgCurr_mA{0};
-    int32_t avgTempr_mC{0};
-    int32_t minVoltLow_mV{INT32_MAX};
-    int32_t maxVoltHigh_mV{0};
-    int32_t avgCoulomb_percent{0};
-
-    auto countState = [](std::map<BatteryState, int> stateCount, BatteryUnitTelemetry const &b)
+    if(!batteryTelemetry.empty())
     {
-        stateCount[b.base_state]++;
-        return stateCount;
-    };
+        return AggregatedBatteryTelemetry{};
+    }
 
     auto present{[](const auto& row){ return row.base_state != BatteryState::Absent; }};
     auto presentBatteryTelemetry{batteryTelemetry | std::views::filter(present) | std::views::common};
+
+    if(std::ranges::empty(presentBatteryTelemetry))
+    {
+        AggregatedBatteryTelemetry aggregatedData{};
+        aggregatedData.baseState = BatteryState::Absent;
+        return aggregatedData;
+    }
+
+    auto countState{[](std::map<BatteryState, int> stateCount, BatteryUnitTelemetry const &b)
+    {
+        stateCount[b.base_state]++;
+        return stateCount;
+    }};
 
     std::map<BatteryState, int> stateCount{std::accumulate(presentBatteryTelemetry.begin(), presentBatteryTelemetry.end(),
                                     std::map<BatteryState, int>{},
@@ -102,55 +106,31 @@ AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUn
     std::vector<std::pair<BatteryState, int>> stateCountVec;
     std::copy(stateCount.begin(), stateCount.end(), std::back_inserter(stateCountVec));
 
-    auto sortedCount{std::ranges::sort(stateCountVec, {}, &std::pair<BatteryState, int>::second)};
-
-    for (const auto& row : presentBatteryTelemetry)
+    auto mostPrevalentState{std::ranges::sort(stateCountVec, {}, &std::pair<BatteryState, int>::second)};
+ 
+    auto computeAverage{[](auto range, auto count, auto value)
     {
-        if(row.volt_mV.has_value())
-        {
-            avgVolt_mV += row.volt_mV.value();
-        }
+        const auto numElements{std::ranges::count_if(range, count)};
+        const auto sum{std::transform_reduce(range.begin(), range.end(), 0, std::plus<int64_t>(), value)};
+        return std::optional<int32_t>{sum / numElements};
+    }};
 
-        if(row.curr_mA.has_value())
-        {
-            avgCurr_mA += row.curr_mA.value();
-        }
-
-        if(row.tempr_mC.has_value())
-        {
-            avgTempr_mC += row.tempr_mC.value();
-        }
-
-        if(row.vlow_mV.has_value())
-        {
-            minVoltLow_mV = std::min(minVoltLow_mV, row.vlow_mV.value());
-        }
-
-        if(row.vhigh_mV.has_value())
-        {
-            maxVoltHigh_mV = std::max(maxVoltHigh_mV, row.vhigh_mV.value());
-        }
-
-        if(row.coulomb_percent.has_value())
-        {
-            avgCoulomb_percent += row.coulomb_percent.value();
-        }
-    }
-
-    AggregatedBatteryTelemetry aggregatedData{};
-    if(!batteryTelemetry.empty())
+    AggregatedBatteryTelemetry aggregatedData
     {
-        aggregatedData.avgVolt_mV = avgVolt_mV / batteryTelemetry.size();
-        aggregatedData.avgCurr_mA = avgCurr_mA / batteryTelemetry.size();
-        aggregatedData.avgTempr_mC = avgTempr_mC / batteryTelemetry.size();
-        aggregatedData.minVoltLow_mV = minVoltLow_mV;
-        aggregatedData.maxVoltHigh_mV = maxVoltHigh_mV;
-        aggregatedData.avgCoulomb_percent = avgCoulomb_percent / batteryTelemetry.size();
-        aggregatedData.baseState = batteryTelemetry.front().base_state;
-        aggregatedData.date = batteryTelemetry.front().date;
-        aggregatedData.time = batteryTelemetry.front().time;
-        aggregatedData.devtype = batteryTelemetry.front().devtype;
-    }
+        .avgVolt_mV = computeAverage(presentBatteryTelemetry, [](const BatteryUnitTelemetry& element) { return element.volt_mV.has_value(); }, [](const BatteryUnitTelemetry& element) { return element.volt_mV.value_or(0); }),
+        .avgCurr_mA = computeAverage(presentBatteryTelemetry, [](const BatteryUnitTelemetry& element) { return element.curr_mA.has_value(); }, [](const BatteryUnitTelemetry& element) { return element.curr_mA.value_or(0); }),
+        .avgTempr_mC = computeAverage(presentBatteryTelemetry, [](const BatteryUnitTelemetry& element) { return element.tempr_mC.has_value(); }, [](const BatteryUnitTelemetry& element) { return element.tempr_mC.value_or(0); }),
+        
+        .minVoltLow_mV = std::ranges::min_element(presentBatteryTelemetry, {}, &BatteryUnitTelemetry::vlow_mV)->vlow_mV,
+        .maxVoltHigh_mV = std::ranges::max_element(presentBatteryTelemetry, {}, &BatteryUnitTelemetry::vhigh_mV)->vhigh_mV,
+        .baseState = mostPrevalentState->first,
+
+        .avgCoulomb_percent = computeAverage(presentBatteryTelemetry, [](const BatteryUnitTelemetry& element) { return element.coulomb_percent.has_value(); }, [](const BatteryUnitTelemetry& element) { return element.coulomb_percent.value_or(0); }),
+
+        .date = std::ranges::min_element(presentBatteryTelemetry, {}, &BatteryUnitTelemetry::date)->date,
+        .time = std::ranges::min_element(presentBatteryTelemetry, {}, &BatteryUnitTelemetry::time)->time,
+        .devtype = batteryTelemetry.front().devtype, // TODO: return all device types found with count
+    };
 
     return aggregatedData;
 }
