@@ -110,7 +110,8 @@ int main()
                 }
             }
 
-            restService->updateBatteryTelemetry(newBatteryTelemetry);
+            auto const newAggregatedTelemetry{bms::aggregateBatteryTelemetry(parsedPowerTelemetry)};
+            restService->updateBatteryTelemetry(newBatteryTelemetry, newAggregatedTelemetry);
         }
         catch(const std::exception& e)
         {

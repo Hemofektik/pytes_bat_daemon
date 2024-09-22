@@ -13,9 +13,12 @@ using namespace http::experimental::listener;
 namespace pytes::rest
 {
 
-Service::Service(utility::string_t url) : m_listener(url)
+Service::Service(utility::string_t url, RequestHandler requestHandlerParam) 
+: listener(url)
+, requestHandler{requestHandlerParam}
 {
-    m_listener.support(methods::GET, std::bind(&Service::handleGet, this, std::placeholders::_1));
+    assert(requestHandler);
+    listener.support(methods::GET, std::bind(&Service::handleGet, this, std::placeholders::_1));
 }
 
 void Service::handleGet(http_request message)
@@ -25,25 +28,12 @@ void Service::handleGet(http_request message)
     auto paths = http::uri::split_path(http::uri::decode(message.relative_uri().path()));
     if (paths.empty())
     {
-        //web::json::value result = web::json::value::array();
         web::json::value result = web::json::value::object();
-
         message.reply(status_codes::OK, result);
         return;
     }
 
-    //utility::string_t wtable_id = paths[0];
-
-    // Get information on a specific table.
-    /*auto found = s_tables.find(table_id);
-    if (found == s_tables.end())
-    {
-        message.reply(status_codes::NotFound);
-    }
-    else
-    {
-        message.reply(status_codes::OK, found->second->AsJSON());
-    }*/
+    requestHandler(paths, message);
 };
 
 

@@ -78,7 +78,7 @@ std::vector<BatteryUnitTelemetry> parseRawPowerTelemetry(const std::string& rawT
 
 AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUnitTelemetry>& batteryTelemetry)
 {
-    if(!batteryTelemetry.empty())
+    if(batteryTelemetry.empty())
     {
         return AggregatedBatteryTelemetry{};
     }
@@ -106,7 +106,7 @@ AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUn
     std::vector<std::pair<BatteryState, int>> stateCountVec;
     std::copy(stateCount.begin(), stateCount.end(), std::back_inserter(stateCountVec));
 
-    auto mostPrevalentState{std::ranges::sort(stateCountVec, {}, &std::pair<BatteryState, int>::second)};
+    std::ranges::sort(stateCountVec, {}, &std::pair<BatteryState, int>::second);
  
     auto computeAverage{[](auto range, auto count, auto value)
     {
@@ -123,7 +123,7 @@ AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUn
         
         .minVoltLow_mV = std::ranges::min_element(presentBatteryTelemetry, {}, &BatteryUnitTelemetry::vlow_mV)->vlow_mV,
         .maxVoltHigh_mV = std::ranges::max_element(presentBatteryTelemetry, {}, &BatteryUnitTelemetry::vhigh_mV)->vhigh_mV,
-        .baseState = mostPrevalentState->first,
+        .baseState = stateCountVec.back().first,
 
         .avgCoulomb_percent = computeAverage(presentBatteryTelemetry, [](const BatteryUnitTelemetry& element) { return element.coulomb_percent.has_value(); }, [](const BatteryUnitTelemetry& element) { return element.coulomb_percent.value_or(0); }),
 

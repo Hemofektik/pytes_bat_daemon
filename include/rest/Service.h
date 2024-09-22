@@ -1,4 +1,5 @@
 #include "cpprest/http_listener.h"
+#include <functional>
 
 namespace pytes::rest
 {
@@ -6,15 +7,18 @@ namespace pytes::rest
 class Service
 {
 public:
-    Service(utility::string_t url);
+    typedef std::function<void(const std::vector<utility::string_t>& paths, web::http::http_request& message)> RequestHandler;
 
-    pplx::task<void> open() { return m_listener.open(); }
-    pplx::task<void> close() { return m_listener.close(); }
+    Service(utility::string_t url, RequestHandler requestHandlerParam);
+
+    pplx::task<void> open() { return listener.open(); }
+    pplx::task<void> close() { return listener.close(); }
 
 private:
     void handleGet(web::http::http_request message);
 
-    web::http::experimental::listener::http_listener m_listener;
+    web::http::experimental::listener::http_listener listener;
+    RequestHandler requestHandler;
 };
 
 
