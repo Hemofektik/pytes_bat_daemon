@@ -115,8 +115,12 @@ AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUn
         return std::optional<int32_t>{sum / numElements};
     }};
 
+    const int64_t totalPower_microW{std::transform_reduce(presentBatteryTelemetry.begin(), presentBatteryTelemetry.end(), 0, std::plus<int64_t>(),
+                                    [](const BatteryUnitTelemetry& element) { return element.volt_mV.value_or(0) * element.curr_mA.value_or(0); } )};
+
     AggregatedBatteryTelemetry aggregatedData
     {
+        .totalPower_W = totalPower_microW / 1'000'000,
         .avgVolt_mV = computeAverage(presentBatteryTelemetry, [](const BatteryUnitTelemetry& element) { return element.volt_mV.has_value(); }, [](const BatteryUnitTelemetry& element) { return element.volt_mV.value_or(0); }),
         .avgCurr_mA = computeAverage(presentBatteryTelemetry, [](const BatteryUnitTelemetry& element) { return element.curr_mA.has_value(); }, [](const BatteryUnitTelemetry& element) { return element.curr_mA.value_or(0); }),
         .avgTempr_mC = computeAverage(presentBatteryTelemetry, [](const BatteryUnitTelemetry& element) { return element.tempr_mC.has_value(); }, [](const BatteryUnitTelemetry& element) { return element.tempr_mC.value_or(0); }),

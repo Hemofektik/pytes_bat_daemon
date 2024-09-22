@@ -39,6 +39,7 @@ struct BatteryUnitTelemetry {
 };
 
 struct AggregatedBatteryTelemetry {
+    std::optional<int32_t> totalPower_W;
     std::optional<int32_t> avgVolt_mV;
     std::optional<int32_t> avgCurr_mA;
     std::optional<int32_t> avgTempr_mC;

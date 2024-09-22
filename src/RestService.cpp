@@ -12,6 +12,7 @@ utility::string_t BasePath{U("power")};
 utility::string_t AggregatedPath{U("aggregated")};
 utility::string_t State{U("state")};
 utility::string_t StateOfCharge{U("soc")};
+utility::string_t Power{U("power")};
 
 std::string toString(const bms::BatteryState& batState)
 {
@@ -40,6 +41,11 @@ auto asJson(const bms::AggregatedBatteryTelemetry abt)
     if(abt.avgCoulomb_percent)
     {
         res[StateOfCharge] = web::json::value::number(*abt.avgCoulomb_percent);
+    }
+
+    if(abt.totalPower_W)
+    {
+        res[Power] = web::json::value::number(*abt.totalPower_W);
     }
 
     return res;
