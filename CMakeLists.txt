@@ -19,6 +19,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Backward)
 
+install(FILES pytes.service DESTINATION /lib/systemd/system) 
+
 include_directories("include")
 
 add_subdirectory(src)

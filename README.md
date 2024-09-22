@@ -42,12 +42,33 @@ make -j4
 
 ## Configuration
 
-TBD
+N/A (Everything is hardcoded right now. Please change the code according to your desire before compiling the daemon.)
 
 ## Running as a service/daemon
 
-TBD
+Once compilation has been completed successfully run the following commands in the build directory to enable the pytes service.
+
+```
+sudo make install
+sudo systemctl enable pytes
+sudo systemctl start pytes
+```
 
 # Home Assistant Integration
 
-TBD
+Extend the [configuration.yaml](https://www.home-assistant.io/docs/configuration/) as follows and [restart Home Assistant](https://www.home-assistant.io/docs/configuration/#reloading-the-configuration-to-apply-changes).
+
+```
+rest:
+  - scan_interval: 1
+    resource: http://localhost:7735/power/aggregated
+    sensor:
+      - name: "Battery SoC"
+        unique_id: "PYTES_BATTERY_PACK_0_SOC"
+        value_template: "{{ value_json['soc'] }}"
+        device_class: battery
+        unit_of_measurement: "%"
+      - name: "Battery State"
+        unique_id: "PYTES_BATTERY_PACK_0_STATE"
+        value_template: "{{ value_json['state'] }}"
+```

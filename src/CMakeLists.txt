@@ -36,3 +36,6 @@ target_link_libraries(pytes PRIVATE
 target_link_libraries(pytes_daemon PRIVATE 
    pytes
 )
+
+
+install(TARGETS pytes_daemon)

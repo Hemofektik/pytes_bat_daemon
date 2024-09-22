@@ -3,8 +3,8 @@ Description=PYTES BMS REST Service
 After=network.target
 
 [Service]
-ExecStart=/opt/pytes_daemon/pytes_daemon
-WorkingDirectory=/opt/pytes_daemon
+ExecStart=/usr/local/bin/pytes_daemon
+WorkingDirectory=/usr/local/bin
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
