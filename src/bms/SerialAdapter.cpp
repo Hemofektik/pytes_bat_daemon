@@ -8,7 +8,7 @@ using namespace mn::CppLinuxSerial;
 namespace pytes::bms
 {
 
-SerialAdapter::SerialAdapter() 
+SerialAdapter::SerialAdapter()
 : serialPort("/dev/ttyUSB0", BaudRate::B_115200, NumDataBits::EIGHT, Parity::NONE, NumStopBits::ONE)
 {
     try

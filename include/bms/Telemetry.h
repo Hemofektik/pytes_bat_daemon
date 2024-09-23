@@ -40,13 +40,15 @@ struct BatteryUnitTelemetry {
 
 struct AggregatedBatteryTelemetry {
     std::optional<int32_t> totalPower_W;
+    std::optional<float> totalCurrent_A;
+    std::optional<float> totalEnergy_kWh;
     std::optional<int32_t> avgVolt_mV;
     std::optional<int32_t> avgCurr_mA;
     std::optional<int32_t> avgTempr_mC;
     std::optional<int32_t> minVoltLow_mV;
     std::optional<int32_t> maxVoltHigh_mV;
     BatteryState baseState{BatteryState::Unknown};
-    std::optional<int32_t> avgCoulomb_percent;
+    std::optional<float> avgCoulomb_percent;
     std::optional<std::string> date;
     std::optional<std::string> time;
     std::optional<std::string> devtype;

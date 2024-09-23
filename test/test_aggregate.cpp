@@ -69,13 +69,27 @@ SCENARIO( "BMS Battery Telemetry can be aggregated", "[bms::telemetry]" )
         };
 
         const bms::AggregatedBatteryTelemetry emptyAggregatedTelemetry{};
-        const bms::AggregatedBatteryTelemetry singeEntryAggregatedTelemetry{};
+        const bms::AggregatedBatteryTelemetry singleEntryAggregatedTelemetry{
+            .totalPower_W = 0,
+            .totalCurrent_A = -2.763,
+            .totalEnergy_kWh = 0.0,
+            .avgVolt_mV = 52566,
+            .avgCurr_mA = -2763,
+            .avgTempr_mC = 30000,
+            .minVoltLow_mV = 3283,
+            .maxVoltHigh_mV = 3288,
+            .baseState = bms::BatteryState::Discharging,
+            .avgCoulomb_percent = 57,
+            .date = "2024-09-06",
+            .time = "09:42:04",
+            .devtype = "E-BOX-48100R-C"
+        };
 
         std::vector<bms::BatteryUnitTelemetry> telemetry;
         bms::AggregatedBatteryTelemetry expectedAggregatedTelemetry;
         std::tie(telemetry, expectedAggregatedTelemetry) = GENERATE_COPY(table<std::vector<bms::BatteryUnitTelemetry>, bms::AggregatedBatteryTelemetry>({
             testCase(emptyTelemetry, emptyAggregatedTelemetry),
-            testCase(singleEntryTelemetry, singeEntryAggregatedTelemetry),
+            testCase(singleEntryTelemetry, singleEntryAggregatedTelemetry),
         }));
 
         auto aggregatedTelemetry{bms::aggregateBatteryTelemetry(telemetry)};

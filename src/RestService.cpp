@@ -13,6 +13,8 @@ utility::string_t AggregatedPath{U("aggregated")};
 utility::string_t State{U("state")};
 utility::string_t StateOfCharge{U("soc")};
 utility::string_t Power{U("power")};
+utility::string_t Current{U("current")};
+utility::string_t Energy{U("energy")};
 
 std::string toString(const bms::BatteryState& batState)
 {
@@ -47,6 +49,16 @@ auto asJson(const bms::AggregatedBatteryTelemetry abt)
     {
         res[Power] = web::json::value::number(*abt.totalPower_W);
     }
+
+    if(abt.totalCurrent_A)
+    {
+        res[Current] = web::json::value::number(*abt.totalCurrent_A);
+    }
+
+    if(abt.totalEnergy_kWh)
+    {
+        res[Energy] = web::json::value::number(*abt.totalEnergy_kWh);
+    }    
 
     return res;
 }

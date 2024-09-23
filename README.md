@@ -68,6 +68,21 @@ rest:
         value_template: "{{ value_json['soc'] }}"
         device_class: battery
         unit_of_measurement: "%"
+      - name: "Battery Power"
+        unique_id: "PYTES_BATTERY_PACK_0_POWER"
+        value_template: "{{ value_json['power'] }}"
+        device_class: power
+        unit_of_measurement: "W"
+      - name: "Battery Current"
+        unique_id: "PYTES_BATTERY_PACK_0_CURRENT"
+        value_template: "{{ value_json['current'] }}"
+        device_class: current
+        unit_of_measurement: "A"
+      - name: "Battery Energy"
+        unique_id: "PYTES_BATTERY_PACK_0_ENERGY"
+        value_template: "{{ value_json['energy'] }}"
+        device_class: energy
+        unit_of_measurement: "kWh"
       - name: "Battery State"
         unique_id: "PYTES_BATTERY_PACK_0_STATE"
         value_template: "{{ value_json['state'] }}"
