@@ -15,6 +15,8 @@ utility::string_t StateOfCharge{U("soc")};
 utility::string_t Power{U("power")};
 utility::string_t Current{U("current")};
 utility::string_t Energy{U("energy")};
+utility::string_t EnergyChargeDaily{U("energy_charge_daily")};
+utility::string_t EnergyDischargeDaily{U("energy_discharge_daily")};
 
 std::string toString(const bms::BatteryState& batState)
 {
@@ -35,7 +37,8 @@ std::string toString(const bms::BatteryState& batState)
     throw std::runtime_error("Encountered unhandled battery state");
 }
 
-auto asJson(const bms::AggregatedBatteryTelemetry abt)
+auto asJson(const bms::AggregatedBatteryTelemetry& abt, 
+            const bms::AccumulatedBatteryTelemetry& dailyAccBatTelemetry)
 {
     web::json::value res = web::json::value::object();
     res[State] = web::json::value::string(toString(abt.baseState));
@@ -58,8 +61,11 @@ auto asJson(const bms::AggregatedBatteryTelemetry abt)
     if(abt.totalEnergy_kWh)
     {
         res[Energy] = web::json::value::number(*abt.totalEnergy_kWh);
-    }    
+    }
 
+    res[EnergyChargeDaily] = web::json::value::number(dailyAccBatTelemetry.energyCharged_kWh);
+    res[EnergyDischargeDaily] = web::json::value::number(dailyAccBatTelemetry.energyDischarged_kWh);
+    
     return res;
 }
 
@@ -105,11 +111,13 @@ RestService::~RestService()
 }
 
 void RestService::updateBatteryTelemetry(const std::vector<bms::BatteryUnitTelemetry>& newBatteryTelemetry,
-                                         const bms::AggregatedBatteryTelemetry& newAggregatedBatteryTelemetry)
+                                         const bms::AggregatedBatteryTelemetry& newAggregatedBatteryTelemetry,
+                                         const bms::AccumulatedBatteryTelemetry& newDailyAccumulatedBatteryTelemetry)
 {
     const int newLatestBatteryTelemetryIndex{(latestBatteryTelemetryIndex + 1) & 1};
     latestBatteryTelemetry[newLatestBatteryTelemetryIndex] = newBatteryTelemetry;
     latestAggregatedBatteryTelemetry[newLatestBatteryTelemetryIndex] = newAggregatedBatteryTelemetry;
+    latestDailyAccumulatedBatteryTelemetry[newLatestBatteryTelemetryIndex] = newDailyAccumulatedBatteryTelemetry;
     latestBatteryTelemetryIndex = newLatestBatteryTelemetryIndex;
 }
 
@@ -119,7 +127,7 @@ void RestService::handleRequest(const std::vector<utility::string_t>& paths, htt
 
     if (basePath == AggregatedPath)
     {
-        message.reply(status_codes::OK, asJson(latestAggregatedBatteryTelemetry[latestBatteryTelemetryIndex]));
+        message.reply(status_codes::OK, asJson(latestAggregatedBatteryTelemetry[latestBatteryTelemetryIndex], latestDailyAccumulatedBatteryTelemetry[latestBatteryTelemetryIndex]));
     }
     else
     {

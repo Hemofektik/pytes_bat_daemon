@@ -132,8 +132,8 @@ AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUn
 
     AggregatedBatteryTelemetry aggregatedData
     {
-        .totalPower_W = static_cast<int32_t>(totalPower_microW / 1'000'000LL),
-        .totalCurrent_A = static_cast<double>(totalCurrent_mA)  / 1'000.0,
+        .totalPower_W = static_cast<float>(static_cast<double>(totalPower_microW) / 1'000'000.0),
+        .totalCurrent_A = static_cast<float>(static_cast<double>(totalCurrent_mA)  / 1'000.0),
         .totalEnergy_kWh = static_cast<float>(static_cast<double>(totalEnergy_mWh) / 1'000'000.0),
         .avgVolt_mV = computeAverage(presentBatteryTelemetry, [](const BatteryUnitTelemetry& element) { return element.volt_mV.has_value(); }, [](const BatteryUnitTelemetry& element) { return element.volt_mV.value_or(0); }),
         .avgCurr_mA = computeAverage(presentBatteryTelemetry, [](const BatteryUnitTelemetry& element) { return element.curr_mA.has_value(); }, [](const BatteryUnitTelemetry& element) { return element.curr_mA.value_or(0); }),
@@ -147,10 +147,24 @@ AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUn
 
         .date = std::ranges::min_element(presentBatteryTelemetry, {}, &BatteryUnitTelemetry::date)->date,
         .time = std::ranges::min_element(presentBatteryTelemetry, {}, &BatteryUnitTelemetry::time)->time,
-        .devtype = batteryTelemetry.front().devtype, // TODO: return all device types found with count
+        .devtype = batteryTelemetry.front().devtype, // TODO: return all device types found with number of appearances (2xE-BOX-48100R-C)
     };
 
     return aggregatedData;
+}
+
+void accumulateBatteryTelemetry(const AggregatedBatteryTelemetry& agregatedBatteryTelemetry, AccumulatedBatteryTelemetry& accumulatedBatteryTelemetry, std::chrono::nanoseconds timeSinceLastUpdate)
+{
+    typedef std::chrono::duration<double, std::ratio<3600>> HoursFloat64;
+    const auto durationHrs{std::chrono::duration_cast<HoursFloat64>(timeSinceLastUpdate)};
+    if(agregatedBatteryTelemetry.baseState == BatteryState::Charging)
+    {
+        accumulatedBatteryTelemetry.energyCharged_kWh += durationHrs.count() * agregatedBatteryTelemetry.totalPower_W.value_or(0) / 1'000.0;
+    }
+    else if(agregatedBatteryTelemetry.baseState == BatteryState::Discharging)
+    {
+        accumulatedBatteryTelemetry.energyDischarged_kWh += durationHrs.count() * std::abs(agregatedBatteryTelemetry.totalPower_W.value_or(0)) / 1'000.0;
+    }
 }
 
 

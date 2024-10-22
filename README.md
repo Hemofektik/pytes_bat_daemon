@@ -83,6 +83,18 @@ rest:
         value_template: "{{ value_json['energy'] }}"
         device_class: energy
         unit_of_measurement: "kWh"
+      - name: "Battery Daily Charge"
+        unique_id: "PYTES_BATTERY_PACK_0_DAILY_CHARGE"
+        value_template: "{{ value_json['energy_charge_daily'] }}"
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+      - name: "Battery Daily Discharge"
+        unique_id: "PYTES_BATTERY_PACK_0_DAILY_DISCHARGE"
+        value_template: "{{ value_json['energy_discharge_daily'] }}"
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
       - name: "Battery State"
         unique_id: "PYTES_BATTERY_PACK_0_STATE"
         value_template: "{{ value_json['state'] }}"

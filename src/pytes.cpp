@@ -72,6 +72,8 @@ int main()
     }
 
     bool const debugLogEnabled{true};
+    bms::AccumulatedBatteryTelemetry accumulatedBatteryTelemetry{};
+    auto lastUpdateTime{std::chrono::steady_clock::now()};
 
     while(true)
     {
@@ -110,8 +112,16 @@ int main()
                 }
             }
 
+            auto now{std::chrono::steady_clock::now()};
+
             auto const newAggregatedTelemetry{bms::aggregateBatteryTelemetry(parsedPowerTelemetry)};
-            restService->updateBatteryTelemetry(newBatteryTelemetry, newAggregatedTelemetry);
+            accumulateBatteryTelemetry(newAggregatedTelemetry, accumulatedBatteryTelemetry, now - lastUpdateTime);
+            lastUpdateTime = now;
+
+            // TODO: reset accumulatedBatteryTelemetry after midnight night when first charging of day starts
+
+            restService->updateBatteryTelemetry(newBatteryTelemetry, newAggregatedTelemetry, accumulatedBatteryTelemetry);
+
         }
         catch(const std::exception& e)
         {

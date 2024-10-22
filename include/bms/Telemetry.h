@@ -3,6 +3,7 @@
 #include <vector>
 #include <optional>
 #include <string>
+#include <chrono>
 
 namespace pytes::bms
 {
@@ -39,7 +40,7 @@ struct BatteryUnitTelemetry {
 };
 
 struct AggregatedBatteryTelemetry {
-    std::optional<int32_t> totalPower_W;
+    std::optional<float> totalPower_W;
     std::optional<float> totalCurrent_A;
     std::optional<float> totalEnergy_kWh;
     std::optional<int32_t> avgVolt_mV;
@@ -54,8 +55,16 @@ struct AggregatedBatteryTelemetry {
     std::optional<std::string> devtype;
 };
 
+
+struct AccumulatedBatteryTelemetry {
+    double energyCharged_kWh{0.0};
+    double energyDischarged_kWh{0.0};
+};
+
+
 std::vector<BatteryUnitTelemetry> parseRawPowerTelemetry(const std::string& rawTelemetry);
 
-AggregatedBatteryTelemetry aggregateBatteryTelemetry(const  std::vector<BatteryUnitTelemetry>& batteryTelemetry);
+AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUnitTelemetry>& batteryTelemetry);
+void accumulateBatteryTelemetry(const AggregatedBatteryTelemetry& agregatedBatteryTelemetry, AccumulatedBatteryTelemetry& accumulatedBatteryTelemetry, std::chrono::nanoseconds timeSinceLastUpdate);
 
 }
