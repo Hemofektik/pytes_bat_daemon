@@ -59,12 +59,13 @@ struct AggregatedBatteryTelemetry {
 struct AccumulatedBatteryTelemetry {
     double energyCharged_kWh{0.0};
     double energyDischarged_kWh{0.0};
+    std::chrono::time_point<std::chrono::system_clock> lastUpdateTime{};
 };
 
 
 std::vector<BatteryUnitTelemetry> parseRawPowerTelemetry(const std::string& rawTelemetry);
 
 AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUnitTelemetry>& batteryTelemetry);
-void accumulateBatteryTelemetry(const AggregatedBatteryTelemetry& agregatedBatteryTelemetry, AccumulatedBatteryTelemetry& accumulatedBatteryTelemetry, std::chrono::nanoseconds timeSinceLastUpdate);
+void accumulateBatteryTelemetry(const AggregatedBatteryTelemetry& aggregatedBatteryTelemetry, std::chrono::time_point<std::chrono::system_clock> aggregatedBatteryTelemetryTimestamp, AccumulatedBatteryTelemetry& accumulatedBatteryTelemetry);
 
 }

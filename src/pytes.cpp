@@ -53,6 +53,17 @@ std::ostream& operator<<(std::ostream& os, const bms::BatteryState& batState)
     return os;
 }
 
+std::tm localTime(const std::chrono::system_clock::time_point& timestamp)
+{
+    const auto time{std::chrono::system_clock::to_time_t(timestamp)};
+    const auto localTime{std::localtime(&time)};
+    if(localTime == nullptr)
+    {
+        throw std::runtime_error("Failed to convert time to local time");
+    }
+    return *localTime;
+}
+
 int main()
 {
     backward::SignalHandling sh;
@@ -71,9 +82,11 @@ int main()
         return 1;
     }
 
-    bool const debugLogEnabled{true};
+    const bool debugLogEnabled{true};
+    bool checkForChargingResetAfterMidnight{false};
     bms::AccumulatedBatteryTelemetry accumulatedBatteryTelemetry{};
-    auto lastUpdateTime{std::chrono::steady_clock::now()};
+    accumulatedBatteryTelemetry.lastUpdateTime = std::chrono::system_clock::now();
+    bms::BatteryState previousAggregatedBaseState{bms::BatteryState::Unknown};
 
     while(true)
     {
@@ -112,13 +125,29 @@ int main()
                 }
             }
 
-            auto now{std::chrono::steady_clock::now()};
 
             auto const newAggregatedTelemetry{bms::aggregateBatteryTelemetry(parsedPowerTelemetry)};
-            accumulateBatteryTelemetry(newAggregatedTelemetry, accumulatedBatteryTelemetry, now - lastUpdateTime);
-            lastUpdateTime = now;
 
-            // TODO: reset accumulatedBatteryTelemetry after midnight night when first charging of day starts
+            const auto now{std::chrono::system_clock::now()};
+            const auto localLastUpdateTime{localTime(accumulatedBatteryTelemetry.lastUpdateTime)};
+            const auto localCurrentUpdateTime{localTime(now)};
+            const bool passedMidnight{localCurrentUpdateTime.tm_hour < localLastUpdateTime.tm_hour};
+            if(passedMidnight)
+            {
+                checkForChargingResetAfterMidnight = true;
+            }
+
+            accumulateBatteryTelemetry(newAggregatedTelemetry, now, accumulatedBatteryTelemetry);
+            bool const switchedToCharging{newAggregatedTelemetry.baseState == bms::BatteryState::Charging && previousAggregatedBaseState != bms::BatteryState::Charging};
+
+            // Reset accumulatedBatteryTelemetry after midnight when first charging of day starts (new cycle)
+            if (checkForChargingResetAfterMidnight && switchedToCharging)
+            {
+                accumulatedBatteryTelemetry.energyCharged_kWh = 0.0;
+                accumulatedBatteryTelemetry.energyDischarged_kWh = 0.0;
+                checkForChargingResetAfterMidnight = false;
+            }
+            previousAggregatedBaseState = newAggregatedTelemetry.baseState;
 
             restService->updateBatteryTelemetry(newBatteryTelemetry, newAggregatedTelemetry, accumulatedBatteryTelemetry);
 

@@ -153,17 +153,20 @@ AggregatedBatteryTelemetry aggregateBatteryTelemetry(const std::vector<BatteryUn
     return aggregatedData;
 }
 
-void accumulateBatteryTelemetry(const AggregatedBatteryTelemetry& agregatedBatteryTelemetry, AccumulatedBatteryTelemetry& accumulatedBatteryTelemetry, std::chrono::nanoseconds timeSinceLastUpdate)
+void accumulateBatteryTelemetry(const AggregatedBatteryTelemetry& aggregatedBatteryTelemetry, std::chrono::time_point<std::chrono::system_clock> aggregatedBatteryTelemetryTimestamp, AccumulatedBatteryTelemetry& accumulatedBatteryTelemetry)
 {
+    const auto timeSinceLastUpdate{aggregatedBatteryTelemetryTimestamp - accumulatedBatteryTelemetry.lastUpdateTime};
+    accumulatedBatteryTelemetry.lastUpdateTime = aggregatedBatteryTelemetryTimestamp;
+
     typedef std::chrono::duration<double, std::ratio<3600>> HoursFloat64;
     const auto durationHrs{std::chrono::duration_cast<HoursFloat64>(timeSinceLastUpdate)};
-    if(agregatedBatteryTelemetry.baseState == BatteryState::Charging)
+    if(aggregatedBatteryTelemetry.baseState == BatteryState::Charging)
     {
-        accumulatedBatteryTelemetry.energyCharged_kWh += durationHrs.count() * agregatedBatteryTelemetry.totalPower_W.value_or(0) / 1'000.0;
+        accumulatedBatteryTelemetry.energyCharged_kWh += durationHrs.count() * aggregatedBatteryTelemetry.totalPower_W.value_or(0) / 1'000.0;
     }
-    else if(agregatedBatteryTelemetry.baseState == BatteryState::Discharging)
+    else if(aggregatedBatteryTelemetry.baseState == BatteryState::Discharging)
     {
-        accumulatedBatteryTelemetry.energyDischarged_kWh += durationHrs.count() * std::abs(agregatedBatteryTelemetry.totalPower_W.value_or(0)) / 1'000.0;
+        accumulatedBatteryTelemetry.energyDischarged_kWh += durationHrs.count() * std::abs(aggregatedBatteryTelemetry.totalPower_W.value_or(0)) / 1'000.0;
     }
 }
 
