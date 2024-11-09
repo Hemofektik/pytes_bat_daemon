@@ -24,8 +24,8 @@ git clone https://github.com/gbmhunter/CppLinuxSerial.git
 cd CppLinuxSerial
 mkdir build
 cd build
-cmake ..
-make
+cmake -DSERIAL_BUILD_SHARED_LIBS=ON ..
+make -j4
 sudo make install
 ```
 

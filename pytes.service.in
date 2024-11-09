@@ -8,7 +8,7 @@ WorkingDirectory=/usr/local/bin
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
-User=rsc
+User=$ENV{USER}
 
 [Install]
 WantedBy=multi-user.target

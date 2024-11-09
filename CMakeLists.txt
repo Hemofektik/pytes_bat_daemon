@@ -4,6 +4,7 @@ project (pytes)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  "${CMAKE_SOURCE_DIR}/bin")
 
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23 -Wconversion -Wall -Wextra -Wpedantic -Wno-deprecated-copy -fno-omit-frame-pointer")
 
 find_package(cpprestsdk REQUIRED)
@@ -19,7 +20,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Backward)
 
-install(FILES pytes.service DESTINATION /lib/systemd/system) 
+FetchContent_Declare(
+    libconfig
+    GIT_REPOSITORY https://github.com/hyperrealm/libconfig
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(libconfig)
+
+configure_file("${CMAKE_SOURCE_DIR}/pytes.service.in" "${CMAKE_BINARY_DIR}/pytes.service")
+
+install(FILES "${CMAKE_BINARY_DIR}/pytes.service" DESTINATION /lib/systemd/system)
 
 include_directories("include")
 

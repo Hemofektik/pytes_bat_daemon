@@ -25,11 +25,12 @@ add_executable (
    pytes.cpp
 )
 
-target_link_libraries(pytes PRIVATE 
+target_link_libraries(pytes
+   Backward::Interface
+   OpenSSL::SSL
    cpprestsdk::cpprest
    CppLinuxSerial::CppLinuxSerial
-   OpenSSL::SSL
-   PUBLIC Backward::Interface
+   config++
 )
 
 
@@ -38,4 +39,4 @@ target_link_libraries(pytes_daemon PRIVATE
 )
 
 
-install(TARGETS pytes_daemon)
+install(TARGETS pytes pytes_daemon)
