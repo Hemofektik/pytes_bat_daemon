@@ -10,8 +10,7 @@
 #include <bms/SerialAdapter.h>
 #include <bms/Telemetry.h>
 #include "RestService.h"
-
-#include <libconfig_chained.h>
+#include "Config.h"
 
 using namespace std::chrono_literals;
 using namespace pytes;
@@ -70,13 +69,15 @@ int main()
 {
     backward::SignalHandling sh;
 
+    const auto config{loadConfig("pytes.cfg")};
+
     std::optional<bms::SerialAdapter> bmsAdapter{};
     std::optional<RestService> restService;
     bmsAdapter.emplace();
 
     try
     {
-        restService.emplace();
+        restService.emplace(config.rest);
     }
     catch(const std::exception& e)
     {

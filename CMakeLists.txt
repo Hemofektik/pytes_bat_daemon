@@ -28,8 +28,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(libconfig)
 
 configure_file("${CMAKE_SOURCE_DIR}/pytes.service.in" "${CMAKE_BINARY_DIR}/pytes.service")
+configure_file("${CMAKE_SOURCE_DIR}/pytes.cfg" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COPYONLY)
 
 install(FILES "${CMAKE_BINARY_DIR}/pytes.service" DESTINATION /lib/systemd/system)
+install(FILES "pytes.cfg" DESTINATION /opt/pytes PERMISSIONS WORLD_READ)
 
 include_directories("include")
 

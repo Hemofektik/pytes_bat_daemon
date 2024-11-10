@@ -1,3 +1,4 @@
+#pragma once
 #include "cpprest/http_listener.h"
 #include <functional>
 

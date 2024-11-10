@@ -1,3 +1,4 @@
+#pragma once
 #include <CppLinuxSerial/SerialPort.hpp>
 
 namespace pytes::bms

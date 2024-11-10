@@ -81,19 +81,20 @@ auto asJson(const std::vector<utility::string_t>& paths)
 
 }
 
-RestService::RestService()
-{
-    utility::string_t fullUriStr;
+RestService::RestService(const Config& config)
+{   
     try
     {
-        utility::string_t port = U("7735");
-        utility::string_t address = U("http://localhost:");
+        utility::string_t port{std::to_string(config.port)};
+        utility::string_t address{U("http://localhost:")};
         address.append(port);
 
         web::uri_builder uri(address);
         uri.append_path(BasePath);
 
-        fullUriStr = uri.to_uri().to_string();
+        utility::string_t fullUriStr{uri.to_uri().to_string()};       
+        std::cout << "Listening for requests at: " << fullUriStr << std::endl;
+
         service = std::make_unique<rest::Service>(fullUriStr, std::bind(&RestService::handleRequest, this, std::placeholders::_1, std::placeholders::_2));
         service->open().wait();
     }
@@ -101,8 +102,6 @@ RestService::RestService()
     {
         throw std::runtime_error(e.what());
     }
-
-    std::cout << "Listening for requests at: " << fullUriStr << std::endl;
 }
 
 RestService::~RestService()

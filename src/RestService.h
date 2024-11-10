@@ -1,3 +1,4 @@
+#pragma once
 #include <rest/Service.h>
 #include <bms/Telemetry.h>
 #include <atomic>
@@ -5,12 +6,17 @@
 namespace pytes
 {
 
-
 class RestService
 {
-
 public:
-    RestService();
+    struct Config
+    {
+        uint16_t port;
+    };
+
+    static Config loadConfig(const std::string& configPath);
+
+    RestService(const Config& config);
     ~RestService();
 
     void updateBatteryTelemetry(const std::vector<bms::BatteryUnitTelemetry>& newBatteryTelemetry,
