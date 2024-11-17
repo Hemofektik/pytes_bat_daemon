@@ -73,7 +73,7 @@ int main()
 
     std::optional<bms::SerialAdapter> bmsAdapter{};
     std::optional<RestService> restService;
-    bmsAdapter.emplace();
+    bmsAdapter.emplace(config.serialAdapter);
 
     try
     {
@@ -158,7 +158,7 @@ int main()
         catch(const std::exception& e)
         {
             std::cerr << e.what() << std::endl << "Reconnecting to BMS adapter" << std::endl;
-            bmsAdapter.emplace();
+            bmsAdapter.emplace(config.serialAdapter);
         }
     }
 }

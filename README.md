@@ -42,7 +42,7 @@ make -j4
 
 ## Configuration
 
-N/A (Everything is hardcoded right now. Please change the code according to your desire before compiling the daemon.)
+Update the REST server port or the device path for the Pytes BMS UART interface in the [pytes.cfg](pytes.cfg) to your needs.
 
 ## Running as a service/daemon
 
