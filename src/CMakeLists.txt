@@ -39,4 +39,5 @@ target_link_libraries(pytes_daemon PRIVATE
 )
 
 
-install(TARGETS pytes pytes_daemon DESTINATION /opt/pytes)
+install(TARGETS pytes)
+install(TARGETS pytes_daemon DESTINATION /opt/pytes)
