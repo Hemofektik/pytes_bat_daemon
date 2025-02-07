@@ -71,9 +71,7 @@ int main()
 
     const auto config{loadConfig("pytes.cfg")};
 
-    std::optional<bms::SerialAdapter> bmsAdapter{};
     std::optional<RestService> restService;
-    bmsAdapter.emplace(config.serialAdapter);
 
     try
     {
@@ -90,9 +88,25 @@ int main()
     bms::AccumulatedBatteryTelemetry accumulatedBatteryTelemetry{};
     accumulatedBatteryTelemetry.lastUpdateTime = std::chrono::system_clock::now();
     bms::BatteryState previousAggregatedBaseState{bms::BatteryState::Unknown};
-
+    std::optional<bms::SerialAdapter> bmsAdapter{};
+    
     while(true)
     {
+        try
+        {
+            if(!bmsAdapter)
+            {
+                std::cout << "Connecting to BMS adapter" << std::endl;
+                bmsAdapter.emplace(config.serialAdapter);
+            }
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
+            std::this_thread::sleep_for(10s);
+            continue;
+        }
+
         std::this_thread::sleep_for(100ms);
 
         try
@@ -157,8 +171,8 @@ int main()
         }
         catch(const std::exception& e)
         {
-            std::cerr << e.what() << std::endl << "Reconnecting to BMS adapter" << std::endl;
-            bmsAdapter.emplace(config.serialAdapter);
+            std::cerr << e.what() << std::endl;
+            bmsAdapter.reset();
         }
     }
 }
