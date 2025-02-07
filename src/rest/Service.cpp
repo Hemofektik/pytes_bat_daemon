@@ -23,7 +23,7 @@ Service::Service(utility::string_t url, RequestHandler requestHandlerParam)
 
 void Service::handleGet(http_request message)
 {
-    ucout << message.to_string() << std::endl;
+    //ucout << message.to_string() << std::endl;
 
     auto paths = http::uri::split_path(http::uri::decode(message.relative_uri().path()));
     if (paths.empty())

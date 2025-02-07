@@ -83,7 +83,7 @@ int main()
         return 1;
     }
 
-    const bool debugLogEnabled{true};
+    const bool debugLogEnabled{false};
     bool checkForChargingResetAfterMidnight{false};
     bms::AccumulatedBatteryTelemetry accumulatedBatteryTelemetry{};
     accumulatedBatteryTelemetry.lastUpdateTime = std::chrono::system_clock::now();
