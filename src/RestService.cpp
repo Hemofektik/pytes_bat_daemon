@@ -86,7 +86,9 @@ RestService::RestService(const Config& config)
     try
     {
         utility::string_t port{std::to_string(config.port)};
-        utility::string_t address{U("http://localhost:")};
+        utility::string_t address{U("http://")};
+        address.append(config.address);
+        address.append(U(":"));
         address.append(port);
 
         web::uri_builder uri(address);

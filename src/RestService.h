@@ -11,7 +11,8 @@ class RestService
 public:
     struct Config
     {
-        uint16_t port;
+        std::string address{};
+        uint16_t port{};
     };
 
     static Config loadConfig(const std::string& configPath);

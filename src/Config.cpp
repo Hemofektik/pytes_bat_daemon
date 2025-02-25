@@ -152,8 +152,10 @@ Config loadConfig(const std::string& configPath)
         std::stringstream errStream;
         libconfig::ChainedSetting cs(cfg.getRoot(), errStream);
         cs.captureExpectedSpecification(&cfgSpec);
-
-        const int port{cs["rest"]["port"].min(0).max(65535).defaultValue(7735).isMandatory()};
+        
+        auto rest{cs["rest"]};
+        std::string address = rest["address"].defaultValue("localhost");
+        const int port{rest["port"].min(0).max(65535).defaultValue(7735).isMandatory()};
 
         auto serialAdapter{cs["serial_adapter"]};
         RawSerialAdapterConfig serialAdapterConfig
@@ -186,6 +188,7 @@ Config loadConfig(const std::string& configPath)
             throw std::runtime_error(err.str());
         }
 
+        result.rest.address = address;
         result.rest.port = static_cast<uint16_t>(port);
         result.serialAdapter = parseSerialAdapterConfig(serialAdapterConfig);
     }
