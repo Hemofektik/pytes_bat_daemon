@@ -50,6 +50,7 @@ Once compilation has been completed successfully run the following commands in t
 
 ```
 sudo make install
+sudo ldconfig
 sudo systemctl enable pytes
 sudo systemctl start pytes
 ```
