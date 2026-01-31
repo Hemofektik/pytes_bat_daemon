@@ -1,6 +1,8 @@
 [Unit]
 Description=PYTES BMS REST Service
-After=network.target
+After=network-online.target systemd-udev-settle.service
+Requires=systemd-udev-settle.service
+Wants=network-online.target
 
 [Service]
 ExecStart=/opt/pytes/pytes_daemon
@@ -8,6 +10,9 @@ WorkingDirectory=/opt/pytes
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
+RestartSec=5
+StartLimitIntervalSec=0
+StartLimitBurst=0
 User=$ENV{USER}
 
 [Install]
