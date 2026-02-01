@@ -11,7 +11,7 @@ namespace
 
 struct RawSerialAdapterConfig
 {
-    std::string devicePath{"/dev/ttyUSB0"};
+    std::vector<std::string> devicePaths{"/dev/ttyUSB0"};
     int32_t baudRate{115200};
     int32_t numDataBits{8};
     std::string parity{"none"};
@@ -122,7 +122,7 @@ mn::CppLinuxSerial::NumStopBits selectNumStopBits(int32_t numStopBits)
 bms::SerialAdapter::Config parseSerialAdapterConfig(const RawSerialAdapterConfig& serialAdapterConfig)
 {
     bms::SerialAdapter::Config result {
-        .devicePath = serialAdapterConfig.devicePath,
+        .devicePaths = serialAdapterConfig.devicePaths,
         .baudRate = selectBaudRate(serialAdapterConfig.baudRate),
         .numDataBits = selectNumDataBits(serialAdapterConfig.numDataBits),
         .parity = selectParity(serialAdapterConfig.parity),
@@ -157,10 +157,24 @@ Config loadConfig(const std::string& configPath)
         std::string address = rest["address"].defaultValue("localhost");
         const int port{rest["port"].min(0).max(65535).defaultValue(7735).isMandatory()};
 
-        auto serialAdapter{cs["serial_adapter"]};
+        auto serialAdapter = cs["serial_adapter"];
+        auto devicePathsCfg = serialAdapter["device_paths"];
+        if (!devicePathsCfg.exists()  || devicePathsCfg.getLength() == 0)
+        {
+            throw std::runtime_error("device_paths is not set");
+        }
+
+        std::vector<std::string> devicePaths;
+        for(int i = 0; i < devicePathsCfg.getLength(); ++i) 
+        {
+            std::string const devicePath = devicePathsCfg[i].defaultValue("/dev/tty<ABC>").isMandatory();
+            std::cout << devicePath << std::endl;
+            devicePaths.push_back(devicePath);
+        }
+
         RawSerialAdapterConfig serialAdapterConfig
         {
-            .devicePath = serialAdapter["device_path"].defaultValue("/dev/ttyUSB0").isMandatory(),
+            .devicePaths = devicePaths,
             .baudRate = serialAdapter["baud_rate"].min(0).max(460800).defaultValue(115200).isMandatory(),
             .numDataBits = serialAdapter["num_data_bits"].min(5).max(8).defaultValue(8).isMandatory(),
             .parity = serialAdapter["parity"].defaultValue("none").isMandatory(),

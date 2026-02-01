@@ -8,16 +8,69 @@ using namespace mn::CppLinuxSerial;
 namespace pytes::bms
 {
 
+
 SerialAdapter::SerialAdapter(const Config& config)
-: serialPort(config.devicePath, config.baudRate, config.numDataBits, config.parity, config.numStopBits, config.hardwareFlowControl, config.softwareFlowControl)
+: serialPort("", config.baudRate, config.numDataBits, config.parity, config.numStopBits, config.hardwareFlowControl, config.softwareFlowControl)
 {
-    try
+    std::string const sentinel{"PYTES>"};
+    bool found = false;
+    for(const auto& path : config.devicePaths) 
     {
-        serialPort.Open();
+        std::cout << "Checking device: "  << path << std::endl;
+
+        try 
+        {
+            serialPort.SetDevice(path);
+            serialPort.SetTimeout(100); // Block for up to 100ms to receive data
+            serialPort.Open();
+
+            if(serialPort.GetState() != mn::CppLinuxSerial::State::OPEN) 
+            {
+                std::cout << "Cannot open device: "  << path << std::endl;
+                continue;
+            }
+
+            serialPort.Write("\n"); // Wake up device if needed
+            std::this_thread::sleep_for(200ms);
+            serialPort.Write("pwr\n");
+            std::string readData;
+            auto const timeout{1000ms};
+            auto const stepDuration{100ms};
+            auto waitedFor{0ms};
+            while(waitedFor < timeout) 
+            {
+                if(serialPort.Available()) 
+                {
+                    serialPort.Read(readData);
+                    if(readData.find(sentinel) != std::string::npos) 
+                    {
+                        found = true;
+                        activeDevicePath = path;
+                        break;
+                    }
+                }
+                std::this_thread::sleep_for(stepDuration);
+                waitedFor += stepDuration;
+            }
+            serialPort.Close();
+            if(found) 
+            {
+                std::cout << "Found PYTES device at: "  << path << std::endl;
+                serialPort.SetDevice(path);
+                serialPort.SetTimeout(100);
+                serialPort.Open();
+                break;
+            }
+        }
+        catch(const mn::CppLinuxSerial::Exception&) 
+        {
+            // Try next device
+            try { serialPort.Close(); } catch(...) {}
+        }
     }
-    catch(const mn::CppLinuxSerial::Exception& e)
+    if(!found) 
     {
-        throw std::runtime_error(std::string("Serial Device Error: ") + e.what());
+        throw std::runtime_error("No serial device responded with the expected sentinel: " + sentinel);
     }
 }
 
@@ -62,7 +115,7 @@ std::string SerialAdapter::readRawPowerTelemetry()
                 totalReadData.append(readData);
             }
 
-            if(readData.rfind(sentinel) == std::string::npos)
+            if(totalReadData.rfind(sentinel) == std::string::npos)
             {
                 std::this_thread::sleep_for(stepDuration);
                 waitedFor += stepDuration;

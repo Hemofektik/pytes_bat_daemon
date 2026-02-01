@@ -9,7 +9,7 @@ class SerialAdapter final
 public:
     struct Config
     {
-        std::string devicePath{"/dev/ttyUSB0"};
+        std::vector<std::string> devicePaths{"/dev/ttyUSB0"};
         mn::CppLinuxSerial::BaudRate baudRate{mn::CppLinuxSerial::BaudRate::B_115200};
         mn::CppLinuxSerial::NumDataBits numDataBits{mn::CppLinuxSerial::NumDataBits::EIGHT};
         mn::CppLinuxSerial::Parity parity{mn::CppLinuxSerial::Parity::NONE};
@@ -30,6 +30,7 @@ public:
 
 private:
     mn::CppLinuxSerial::SerialPort serialPort;
+    std::string activeDevicePath;
 };
 
 
