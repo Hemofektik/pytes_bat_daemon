@@ -30,9 +30,8 @@ SerialAdapter::SerialAdapter(const Config& config)
                 continue;
             }
 
-            serialPort.Write("\n"); // Wake up device if needed
+            serialPort.Write("\n"); // request default answer
             std::this_thread::sleep_for(200ms);
-            serialPort.Write("pwr\n");
             std::string readData;
             auto const timeout{1000ms};
             auto const stepDuration{100ms};
@@ -57,7 +56,7 @@ SerialAdapter::SerialAdapter(const Config& config)
             {
                 std::cout << "Found PYTES device at: "  << path << std::endl;
                 serialPort.SetDevice(path);
-                serialPort.SetTimeout(100);
+                serialPort.SetTimeout(5000);
                 serialPort.Open();
                 break;
             }
@@ -91,51 +90,72 @@ std::string SerialAdapter::readRawPowerTelemetry()
     std::string const sentinel{"PYTES>"};
     char const messageStartToken{'@'};
     std::string_view const messageEndToken{"Command completed successfully"};
-    auto const timeout{5000ms};
-    auto const stepDuration{100ms};
-    auto waitedFor{0ms};
+    int const maxRetries{3};
 
-    try
+    for(int retry = 0; retry < maxRetries; ++retry)
     {
-        serialPort.Write("pwr\n");
-
-        while(serialPort.Available() == 0 && waitedFor < timeout)
+        try
         {
-            std::this_thread::sleep_for(stepDuration);
-            waitedFor += stepDuration;
-        }
+            serialPort.Write("\npwr\n");
+            std::this_thread::sleep_for(200ms);
 
-        std::string totalReadData;
-        while(serialPort.Available() || waitedFor < timeout)
-        {
-            std::string readData;
-            if(serialPort.Available())
+            std::string totalReadData;
+            bool foundStartToken = false;
+            auto startTime = std::chrono::steady_clock::now();
+            auto const maxDurationAfterStart{5000ms};
+            
+            // Read until we find both start and end tokens
+            while(true)
             {
+                std::string readData;
                 serialPort.Read(readData);
-                totalReadData.append(readData);
-            }
-
-            if(totalReadData.rfind(sentinel) == std::string::npos)
-            {
-                std::this_thread::sleep_for(stepDuration);
-                waitedFor += stepDuration;
-            }
-            else
-            {
-                auto const start{totalReadData.find_last_of(messageStartToken)};
-                auto const end{totalReadData.rfind(messageEndToken)};
-                if(start == std::string::npos || end == std::string::npos)
+                
+                if(readData.empty())
                 {
-                    throw std::runtime_error("Received unexpected output format: " + totalReadData);
+                    // Timeout occurred (Read returns empty on timeout)
+                    break;
                 }
-
-                return totalReadData.substr(start + 1, end - start - 1);
+                
+                totalReadData.append(readData);
+                
+                // Check if we found the start token
+                if(!foundStartToken && totalReadData.find_last_of(messageStartToken) != std::string::npos)
+                {
+                    foundStartToken = true;
+                    startTime = std::chrono::steady_clock::now();
+                }
+                
+                // If we found the start token, check for end token
+                if(foundStartToken)
+                {
+                    if(totalReadData.rfind(messageEndToken) != std::string::npos)
+                    {
+                        // Found both tokens, extract and return
+                        auto const start{totalReadData.find_last_of(messageStartToken)};
+                        auto const end{totalReadData.rfind(messageEndToken)};
+                        
+                        return totalReadData.substr(start + 1, end - start - 1);
+                    }
+                    
+                    // Check if we've exceeded the time limit after finding start token
+                    auto elapsed = std::chrono::steady_clock::now() - startTime;
+                    if(elapsed >= maxDurationAfterStart)
+                    {
+                        break;
+                    }
+                }
             }
         }
-    }
-    catch(const mn::CppLinuxSerial::Exception& e)
-    {
-        throw std::runtime_error(std::string("Serial Device Error: ") + e.what());
+        catch(const mn::CppLinuxSerial::Exception& e)
+        {
+            throw std::runtime_error(std::string("Serial Device Error: ") + e.what());
+        }
+
+        // If we get here, timeout occurred; continue to retry unless it's the last attempt
+        if(retry == maxRetries - 1)
+        {
+            throw std::runtime_error("Timeout occured! Did not receive data from the serial device after " + std::to_string(maxRetries) + " attempts.");
+        }
     }
 
     throw std::runtime_error("Timeout occured! Did not receive data from the serial device.");
